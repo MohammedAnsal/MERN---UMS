@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
 
 const SignUp = () => {
   
@@ -47,7 +48,7 @@ const SignUp = () => {
 
       }
 
-      navigate('/')
+      navigate('/signin')
       
     } catch (error) {
 
@@ -100,6 +101,8 @@ const SignUp = () => {
       </div>
       
       <p className='text-red-700 mt-5'>{error && 'Somthing Went Wrong...'}</p>
+
+      <ToastContainer/>
 
     </div>
 
