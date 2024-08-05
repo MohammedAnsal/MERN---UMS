@@ -54,3 +54,53 @@ export const signIn = async (req, res, next) => { // SignIn User
     }
 
 };
+
+export const google = async (req, res, next) => {
+
+    try {
+
+        const user = await User.findOne({ email: req.body.email });
+
+        if (user) {
+            
+            
+            const token = jwt.sign({ id: user._id }, process.env.JWT_TOKEN);
+            
+            const { password: hashPassword, ...rest } = user._doc
+                    
+            const expiryDate = new Date(Date.now() + 3600000);  //  1 hour
+                    
+            res.cookie('access_token', token, { httpOnly: true, expires: expiryDate }).status(200).json(rest); //  Set Cookies
+            
+        } else {
+            
+            const generatePassword = Math.random().toString(36).slice(-8);
+            
+            const hashPassword = bcryptjs.hashSync(generatePassword, 10);
+            
+            const newUser = new User({
+                userName: req.body.name.split(' ').join('').toLowerCase() + Math.floor(Math.random() * 10000).toString(),
+                email: req.body.email,
+                password: hashPassword,
+                profilePicture: req.body.photo
+            });
+            
+            await newUser.save()
+            
+            const token = jwt.sign({ id: newUser._id }, process.env.JWT_TOKEN);
+            
+            const { password: hashPassword2, ...rest } = newUser._doc
+                    
+            const expiryDate = new Date(Date.now() + 3600000);  //  1 hour
+                    
+            res.cookie('access_token', token, { httpOnly: true, expires: expiryDate }).status(200).json(rest); //  Set Cookies
+
+        }
+        
+    } catch (error) {
+
+        next(error)
+        
+    }
+
+};
