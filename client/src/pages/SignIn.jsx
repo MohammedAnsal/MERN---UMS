@@ -1,10 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom'
-import React, { useState } from 'react'
+import React, { useState ,useEffect } from 'react'
 
 const SignIn = () => {
 
   const [formData, setFormData] = useState({});
-
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate()
 
   const handleChange = (e) => {
@@ -14,23 +15,62 @@ const SignIn = () => {
   }
 
   const handleSumbit = async (e) => {
-    
+     
     e.preventDefault();
 
     try {
+       
+      setLoading(true);
+      setError(false);
 
-      const res = await fetch('/api/auth/signin', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
+      const res = await fetch("/api/auth/signin", {
+         
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+         
+        body: JSON.stringify(formData),
+         
+      });
 
-      const data = await res.json()
+      const data = await res.json();
+
+      setLoading(false);
+
+      if (data.success === false) {
+         
+        setError(true);
+        return;
+        
+      }
+
+      navigate("/");
       
     } catch (error) {
-
-      console.log(error.message);
       
+      setLoading(false);
+      setError(true);
       
     }
-
+    
   };
+ 
+  // For Removing the error message in the ui
+
+  useEffect(() => {
+    
+    if (error === true) {
+      
+      setTimeout(() => {
+
+        setError(false)
+
+      }, 2000)
+
+    }
+
+  });
 
   return (
       
@@ -38,29 +78,30 @@ const SignIn = () => {
 
       <h1 className='text-3xl text-center font-semibold my-7'>Sign In</h1>
 
-      <form onSubmit={handleSumbit}  className='flex flex-col gap-4'>
+      <form onSubmit={handleSumbit} className='flex flex-col gap-4'>
 
         <input onChange={handleChange} className='bg-slate-100 p-3 rounded-lg' type="email" placeholder='Email' id="email" />
         <input onChange={handleChange} className='bg-slate-100 p-3 rounded-lg' type="password" placeholder='Password' id="password" />
 
-        <button className='bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80'>Sign In</button>
+        <button className='bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80'>{loading ? 'Loading...' : 'Sign In'}</button>
 
       </form>
 
       <div className='flex gap-2 mt-5'>
 
-        <p>Create new account</p>
+        <p>Dont have an accout?</p>
         <Link to='/sign-Up'>
-        <span className='text-blue-500'>Sign Up</span>
+          <span className='text-blue-500'>Sign Up</span>
         </Link>
 
       </div>
       
-      <p className='text-red-700 mt-5'></p>
+      <p className='text-red-700 mt-5'>{error && 'Somthing Went Wrong...'}</p>
 
     </div>
 
   )
-}
+
+};
 
 export default SignIn
