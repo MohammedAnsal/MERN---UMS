@@ -6,7 +6,7 @@ const Header = () => {
     <div className="bg-gray-300">
       <div className="flex max-w-6xl items-center justify-between p-5 mx-auto">
         <Link to="/">
-          <h1 className="font-bold">Auth App</h1>
+          <h1 className="font-bold">U M S</h1>
         </Link>
 
         <ul className="flex gap-4">

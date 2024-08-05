@@ -6,7 +6,13 @@ import auth_route from "./routes/auth_route.js";
 
 dotenv.config();  //  env
 
-mongoose.connect(process.env.MONGO_URL);  //  MongoDB Connection
+mongoose.connect(process.env.MONGO_URL)
+  
+  .then(() => {
+    console.log("Connected");
+  }).
+  catch(() => { console.log('Failed');
+   });  //  MongoDB Connection
 
 const app = express();
 
