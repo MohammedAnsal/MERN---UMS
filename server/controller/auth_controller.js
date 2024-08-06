@@ -55,14 +55,13 @@ export const signIn = async (req, res, next) => { // SignIn User
 
 };
 
-export const google = async (req, res, next) => {
+export const google = async (req, res, next) => {   //  Google Auth
 
     try {
 
         const user = await User.findOne({ email: req.body.email });
 
         if (user) {
-            
             
             const token = jwt.sign({ id: user._id }, process.env.JWT_TOKEN);
             

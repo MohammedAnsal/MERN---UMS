@@ -6,7 +6,7 @@ import { signInSuccess } from '../redux/user/userSlice';
 
 const OAuth = () => {
 
-    const dispatch = useDispatch()
+    const dispatch = useDispatch()  //  Call Dispatch
 
     const handleGoogle = async () => {
         
@@ -28,8 +28,6 @@ const OAuth = () => {
             });
 
             const data = await res.json()
-
-            console.log(data);
             
             dispatch(signInSuccess(data));  //  Save Data 
             
