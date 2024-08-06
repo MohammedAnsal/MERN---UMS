@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/storage';
-import { app } from '../firebase/firebase';
-import { updateUserStart, updateUserSuccess, updateUserFailure, deleteUserAccount, signOut } from '../redux/user/userSlice';
+import { app } from '../../firebase/firebase';
+import { updateUserStart, updateUserSuccess, updateUserFailure, deleteUserAccount, signOut } from '../../redux/user/userSlice';
 
 const Profile = () => {
 

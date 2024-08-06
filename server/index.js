@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import user_route from "./routes/user_route.js";
 import auth_route from "./routes/auth_route.js";
 import cookieParser from "cookie-parser";
+import admin_route from './routes/admin_route.js'
 
 dotenv.config();  //  env
 
@@ -23,6 +24,8 @@ app.use(cookieParser())
 
 app.use('/api/user', user_route); //  user_controller
 app.use('/api/auth', auth_route); //  auth_controller
+
+app.use('/api/admin', admin_route);
 
 app.use((err, req, res, next) => {
   
