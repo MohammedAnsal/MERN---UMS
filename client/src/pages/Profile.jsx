@@ -141,7 +141,7 @@ const Profile = () => {
     
     try {
 
-      await fetch('/api/user/signout')
+      await fetch('/api/auth/signout')
       dispatch(signOut());
       
     } catch (error) {

@@ -104,11 +104,11 @@ export const google = async (req, res, next) => {   //  Google Auth
 
 };
 
-export const signout = async (req, res, next) => {
+export const signout = async (req, res, next) => {  //  Sign Out
     
     try {
         
-        res.clearCookie('access_token').status(200).json('Signout Success');
+        res.clearCookie("access_token").status(200).json("Signout Success");
         
     } catch (error) {
         
