@@ -1,21 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/storage';
 import { app } from '../firebase/firebase';
+import { updateUserStart, updateUserSuccess, updateUserFailure } from '../redux/user/userSlice';
 
 const Profile = () => {
 
-  const { currentUser } = useSelector(state => state.user);
+  const { currentUser, loading, error } = useSelector(state => state.user);
 
   const fileRef = useRef(null)
   const [image, setImage] = useState(undefined);
   const [imagePercentage, setImagePercentage] = useState(0)
   const [imageError, setImageError] = useState(false)
   const [formData, setFormData] = useState({});
+  const [updateSuccess, setUpdateSuccess] = useState(false);
 
-  console.log(formData);
+  const dispatch = useDispatch();
   
-  useEffect(() => {
+  useEffect(() => { //  For Store Image the state
     
     if (image) {
       
@@ -25,38 +27,7 @@ const Profile = () => {
 
   }, [image]);
 
-  // const handleFileUpload = async (img) => {
-    
-  //   const storage = getStorage(app)
-  //   const fileName = new Date().getTime() + img.name
-  //   const storageRef = ref(storage, fileName);
-  //   const uploadImage = uploadBytesResumable(storageRef, img)
-    
-  //   uploadImage.on('state_changed', (snapshot) => {
-      
-  //     const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-
-  //     setImagePercentage(Math.round(progress));
-
-  //   });
-
-  //   (error) => {
-      
-  //     setImageError(true)
-
-  //   }
-
-  //   () => {
-      
-  //     getDownloadURL(uploadImage.snapshot.ref).then((downloadURL) => {
-        
-  //       setFormData({ ...formData, profilePicture: downloadURL });
-
-  //     })
-
-  //   }
-
-  // };
+  //  Handle And Upload Image :-
 
   const handleFileUpload = async (image) => {
      
@@ -101,6 +72,45 @@ const Profile = () => {
     );
 
   };
+
+  const handleChange = async (e) => {
+    
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+    
+  }
+  
+
+  //  Handle Update User deatils :-
+
+  const handleUpdate = async (e) => {
+
+    e.preventDefault();
+    
+    try {
+
+      dispatch(updateUserStart())
+
+      const res = await fetch(`/api/user/update/${currentUser._id}`, { method: 'POST', headers: { "Content-Type": "application/json" }, body: JSON.stringify(formData) });
+      
+      const data = await res.json()
+
+        if (data.success === false) {
+         
+        dispatch(updateUserFailure(data)) //  Seccond Dispatch
+        return;
+        
+      };
+
+      dispatch(updateUserSuccess(data))
+      setUpdateSuccess(true)
+      
+    } catch (error) {    
+
+      dispatch(updateUserFailure(error))
+
+    }
+
+  };
   
   return (
 
@@ -108,7 +118,7 @@ const Profile = () => {
 
       <h1 className='text-3xl font-semibold text-center my-7'>Profile</h1>
 
-      <form className='flex flex-col gap-4'>
+      <form onSubmit={handleUpdate} className='flex flex-col gap-4'>
 
         <input onChange={(e) => setImage(e.target.files[0])} type="file" ref={fileRef} hidden accept='image/*'/>
 
@@ -122,11 +132,11 @@ const Profile = () => {
         
         </p>
 
-        <input defaultValue={currentUser.userName} className='bg-slate-100 p-3 rounded-lg' type="text" placeholder='Username' id="username" />
-        <input defaultValue={currentUser.email} className='bg-slate-100 p-3 rounded-lg' type="email" placeholder='Email' id="email" />
-        <input className='bg-slate-100 p-3 rounded-lg' type="password" placeholder='Password' id="password" />
+        <input onChange={handleChange} defaultValue={currentUser.userName} className='bg-slate-100 p-3 rounded-lg' type="text" placeholder='Username' id="username" />
+        <input onChange={handleChange} defaultValue={currentUser.email} className='bg-slate-100 p-3 rounded-lg' type="email" placeholder='Email' id="email" />
+        <input onChange={handleChange} className='bg-slate-100 p-3 rounded-lg' type="password" placeholder='Password' id="password" />
 
-        <button className='bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80'>update</button>
+        <button className='bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80'>{loading ? 'Loading...' : 'update'}</button>
 
       </form>
 
@@ -134,6 +144,9 @@ const Profile = () => {
         <span className='text-red-700 cursor-pointer'>Delete Account</span>
         <span className='text-red-700 cursor-pointer'>Sign Out</span>
       </div>
+
+      <p className='text-red-700 mt-5'>{error ? error.message || 'Somthing Went Wrong...' : ''}</p>
+      <p className='text-green-700 mt-5'>{updateSuccess ? 'User is updated successfully...' : ''}</p>
 
     </div>
 

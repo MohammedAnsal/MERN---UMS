@@ -4,10 +4,7 @@ import { useSelector } from 'react-redux';
 
 const Header = () => {
 
-  const { currentUser } = useSelector(state => state.user); //  Using Sate Value
-
-  console.log(currentUser , 'aaaaaa');
-  
+  const { currentUser } = useSelector(state => state.user); //  Using Sate Value  
 
   return (
 
