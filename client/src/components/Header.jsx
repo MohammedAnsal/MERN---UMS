@@ -4,8 +4,8 @@ import { useSelector } from 'react-redux';
 
 const Header = () => {
 
-  const { currentUser } = useSelector(state => state.user); //  Using Sate Value  
-
+  const { currentUser } = useSelector(state => state.user); //  Using Sate Value
+  
   return (
 
     <div className="bg-gray-300">
