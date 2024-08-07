@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'sonner';
 import { signInFailure, signInStart, signInSuccess } from '../../redux/user/userSlice';
 import OAuth from '../../components/OAuth';
 
@@ -9,6 +10,7 @@ const SignIn = () => {
   const [formData, setFormData] = useState({});
   const navigate = useNavigate();
   const dispatch = useDispatch();  //  Dispatch Function
+  
   const { error, loading } = useSelector(state => state.user);  //  Fetching State Value
 
   //  handle and store all form data in the state :-
@@ -18,38 +20,71 @@ const SignIn = () => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
 
   };
+  
+  //  Validation :-
+
+  const validation = () => {
+   
+    const { email, password } = formData;
+   
+    if (!email && !password || (email?.trim() == '' || password?.trim() == '')) {
+
+      toast.error('field can not be empty')
+      return false
+    }
+    
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    if (!emailRegex.test(email)) {
+      toast.error('Please enter a valid email address');
+      return false;
+    }
+    
+    if (password.length < 6) {
+      toast.error('minimum 6 character Required')
+      return false
+    }
+   
+    return true
+    
+  };
 
   const handleSumbit = async (e) => {
      
     e.preventDefault();
-
+    
     try {
-       
-      dispatch(signInStart())   //  First Dispatch
-
-      const res = await fetch("/api/auth/signin", {
-         
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-         
-        body: JSON.stringify(formData),
-         
-      });
-
-      const data = await res.json();      
-
-      if (data.success === false) {
-         
-        dispatch(signInFailure(data)) //  Seccond Dispatch
-        return;
+      
+      if (validation()) {
         
-      };
-
-      dispatch(signInSuccess(data)) //  Third Dispatch
-
-      navigate("/");
+        dispatch(signInStart())   //  First Dispatch
+  
+        const res = await fetch("/api/auth/signin", {
+           
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+           
+          body: JSON.stringify(formData),
+           
+        });
+  
+        const data = await res.json();
+  
+        if (data.success === false) {
+           
+          dispatch(signInFailure(data)) //  Seccond Dispatch
+          return;
+          
+        };
+  
+        dispatch(signInSuccess(data)) //  Third Dispatch
+  
+        navigate("/");
+        toast.success('SignIn Successfully...');
+  
+      }
       
     } catch (error) {
       

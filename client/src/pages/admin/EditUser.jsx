@@ -1,12 +1,15 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
+import { useDispatch } from "react-redux"; 'react-redux';
 import {
   getDownloadURL,
   getStorage,
   ref,
   uploadBytesResumable,
 } from "firebase/storage";
+import { toast } from 'sonner';
 import { app } from "../../firebase/firebase";
+
 
 const EditUser = () => {
 
@@ -18,9 +21,10 @@ const EditUser = () => {
   const [imagePercentage, setImagePercentage] = useState(0);
   const [formData, setFormData] = useState({});
   const [imageError, setImageError] = useState(false);
-  const [updateSuccess, setUpdateSuccess] = useState(false);
+  const dispatch = useDispatch();
 
   const getUserData = async () => {
+
     const res = await fetch(`/api/admin/getuser/${id}`);
     const user = await res.json();
 
@@ -34,6 +38,7 @@ const EditUser = () => {
   };
 
   const handleFileUpload = async (image) => {
+     
     const storage = getStorage(app);
 
     const fileName = new Date().getTime() + image.name;
@@ -43,52 +48,113 @@ const EditUser = () => {
     const uploadTask = uploadBytesResumable(storageRef, image);
 
     uploadTask.on(
-      "state_changed",
+
+      'state_changed',
 
       (snapshot) => {
-        const progress =
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
 
+        const progress =
+          
+        (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        
         setImagePercentage(Math.round(progress));
+
+        if (progress == 100) setTimeout(() => { setImagePercentage(0) }, 2000);
+        
       },
 
       (error) => {
+
         setImageError(true);
+
       },
 
       () => {
+
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) =>
+
           setFormData({ ...formData, profilePicture: downloadURL })
+
         );
+
       }
+
     );
+
   };
 
-    const handleEdit = async (e) => {    //  Handle User Edit
+  //  Validation :-
+
+  const validation = () => {    
+   
+    const { username, email, password } = formData;
+   
+    if (!username && !email && !password || (username?.trim() == '' || email?.trim() == '' || password?.trim() == '')) {
+
+      toast.error('field can not be empty')
+      return false
+    }
+    
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    if (!emailRegex.test(email)) {
+      toast.error('Please enter a valid email address');
+      return false;
+    }
+    
+    if (username?.length < 4) {
+      toast.error('username minimum 4 required')
+      return false
+    }
+    if (password.length < 6) {
+      toast.error('minimum 6 character Required')
+      return false
+    }
+
+   
+    return true
+    
+  };
+
+  const handleEdit = async (e) => {    //  Handle User Edit
 
     e.preventDefault();
 
     try {
-      const res = await fetch(`/api/admin/edituser/${id}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      
+      if (validation()) {
+          
+        const res = await fetch(`/api/admin/edituser/${id}`, {
 
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+
+        });
+    
         await res.json();
-        setUpdateSuccess(true)
+        toast.success('Updated Successfully')
+        
+      }
+
     } catch (error) {
+        
       console.log(error.message);
+        
     }
+      
   };
 
   useEffect(() => {
+
     getUserData();  //  Call GetUser Function
 
     if (image) {
+      
       handleFileUpload(image);  //  Call ImageUpload Function
     }
-  }, []);
+  }, [image]);
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-800">
@@ -148,14 +214,7 @@ const EditUser = () => {
             Update
           </button>
         </form>
-      <p className="text-green-700 mt-5 text-center">
-        {updateSuccess ? "Updated successfully..." : ""}
-      </p>
       </div>
-
-      {/* <p className="text-red-700 mt-5">
-        {error ? error.message || "Somthing Went Wrong..." : ""}
-      </p> */}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const NewUser = () => {
 
@@ -13,17 +14,59 @@ const NewUser = () => {
 
   }
 
+  //  Validation :-
+
+  const validation = () => {
+   
+    const { username, email, password } = formData;
+   
+    if (!username && !email && !password || (username?.trim() == '' || email?.trim() == '' || password?.trim() == '')) {
+
+      toast.error('field can not be empty')
+      return false
+    }
+    
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    if (!emailRegex.test(email)) {
+      toast.error('Please enter a valid email address');
+      return false;
+    }
+    
+    if (username?.length < 4) {
+      toast.error('username minimum 4 required')
+      return false
+    }
+    if (password.length < 6) {
+      toast.error('minimum 6 character Required')
+      return false
+    }
+
+   
+    return true
+    
+  };
+
   const handleAddUser = async (e) => {
     
     e.preventDefault()
 
     try {
-
-      const res = await axios.post("/api/admin/adduser", formData);
-
-      if (res.data) {
+      
+      if (validation()) {
         
-        navigate('/admin/dashboard')
+        const res = await axios.post("/api/admin/adduser", formData);
+    
+        if (res.status == 200) {
+  
+          toast.success("Added new user...");
+          navigate("/admin/dashboard");
+  
+        } else {
+  
+          toast.error('Somthing Went Wrong!')
+  
+        }
 
       }
       

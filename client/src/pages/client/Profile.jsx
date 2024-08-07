@@ -3,8 +3,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/storage';
 import { app } from '../../firebase/firebase';
 import { updateUserStart, updateUserSuccess, updateUserFailure, deleteUserAccount, signOut } from '../../redux/user/userSlice';
-
+import useAuth from '../../hooks/useAuth';
+import { toast } from 'sonner';
 const Profile = () => {
+
+  useAuth()
 
   const { currentUser, loading, error } = useSelector(state => state.user);
 
@@ -13,12 +16,11 @@ const Profile = () => {
   const fileRef = useRef(null)
   const [image, setImage] = useState(undefined);
   const [imagePercentage, setImagePercentage] = useState(0)
-  const [deleteAccount, setDeletAccount] = useState(false);
   const [imageError, setImageError] = useState(false)
   const [formData, setFormData] = useState({});
-  const [updateSuccess, setUpdateSuccess] = useState(false);
 
   useEffect(() => { //  For call function
+
     
     if (image) {
       
@@ -51,6 +53,9 @@ const Profile = () => {
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
         
         setImagePercentage(Math.round(progress));
+
+        if (progress == 100) setTimeout(() => { setImagePercentage(0) }, 2000);
+
 
       },
 
@@ -87,25 +92,23 @@ const Profile = () => {
     e.preventDefault();
     
     try {
-
-      setDeletAccount(false);
-
+          
       dispatch(updateUserStart())
-
+  
       const res = await fetch(`/api/user/update/${currentUser._id}`, { method: 'POST', headers: { "Content-Type": "application/json" }, body: JSON.stringify(formData) });
-      
+        
       const data = await res.json()
-
+  
       if (data.success === false) {
-         
+           
         dispatch(updateUserFailure(data))
         return;
-        
+          
       };
-
+  
       dispatch(updateUserSuccess(data)) //  Save Update
-      setUpdateSuccess(true)
-      
+      toast.success("User is updated successfully...");
+
     } catch (error) {
 
       dispatch(updateUserFailure(error))
@@ -125,7 +128,7 @@ const Profile = () => {
       const data = await res.json();
 
       dispatch(deleteUserAccount(data))
-      setDeletAccount(true)
+      toast.success('Account Deleted Successfully...')
       
     } catch (error) {
 
@@ -141,8 +144,9 @@ const Profile = () => {
     
     try {
 
-      await fetch('/api/auth/signout')
+      await fetch('/api/auth/signout');
       dispatch(signOut());
+      toast.success('SignOut Successfully...');
       
     } catch (error) {
 
@@ -186,8 +190,6 @@ const Profile = () => {
       </div>
 
       <p className='text-red-700 mt-5'>{error ? error.message || 'Somthing Went Wrong...' : ''}</p>
-      <p className='text-green-700 mt-5'>{updateSuccess ? 'User is updated successfully...' : ''}</p>
-      <p className='text-green-700 mt-5'>{deleteAccount ? 'User account deleted successfully...' : ''}</p>
 
     </div>
 

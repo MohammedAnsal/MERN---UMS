@@ -2,12 +2,16 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { signOut } from '../../redux/user/userSlice';
+import { toast } from 'sonner';
 
 const Dashboard = () => {
 
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const setUsersData = async () => { //  Fetch Users Data
@@ -34,7 +38,6 @@ const Dashboard = () => {
       if (result.isConfirmed) {
 
         await axios.delete(`/api/admin/deleteuser/${id}`);
-
         setUsersData(); // Again Call Same Function
 
         Swal.fire({
@@ -42,22 +45,39 @@ const Dashboard = () => {
           text: "Your file has been deleted.",
           icon: "success",
         });
-
       }
-
     });
-
   };
 
   useEffect(() => {
-    setUsersData();  //  For Calling Function
+
+    setUsersData(); //  For Calling Function
+
   }, []);
 
-  const filteredUsers = users.filter( //  For Search 
+  const filteredUsers = users.filter( //  For Search
+  
     (user) =>
       user.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  //  Handle SignOut
+
+  const handleSignOut = async () => {
+    
+    try {
+
+      dispatch(signOut())
+      toast.success('SignOut Successfully...')
+      
+    } catch (error) {
+
+      console.log(error.message);
+      
+    }
+
+  };
 
   return (
     <div className="relative p-10 bg-gray-100 dark:bg-gray-900 h-screen">
@@ -74,15 +94,23 @@ const Dashboard = () => {
           className="w-50 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
 
-        <button
-          onClick={() => navigate("/admin/adduser")} // Navigate to the Add User page
-          className="bg-blue-600 text-white p-2 rounded-md shadow-md hover:bg-blue-700 transition-all ease-in duration-[.3]"
-        >
-          Add User
-        </button>
+        <div className="flex gap-4">
+          <button
+            onClick={() => navigate("/admin/adduser")} // Navigate to the Add User page
+            className="bg-blue-600 text-white p-2 rounded-md shadow-md hover:bg-blue-700 transition-all ease-in duration-[.3]"
+          >
+            Add User
+          </button>
+          <button
+            onClick={handleSignOut}
+            className="bg-red-600 text-white p-2 rounded-md shadow-md hover:bg-red-700 transition-all ease-in duration-[.3]"
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
-      <div className="max-h-[70vh] overflow-y-auto">
+      <div className="max-h-[70vh] overflow-y-auto mt-6">
         <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 shadow-md rounded-lg">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
@@ -110,7 +138,7 @@ const Dashboard = () => {
                 >
                   {e.userName}
                 </th>
-                <td className="px-6 py-4">{e.email}</td>
+                <td className="px-6 py-4 text-white">{e.email}</td>
                 <td className="px-6 py-4">
                   <div className="w-[2rem] h-[2rem] rounded-full overflow-hidden">
                     <img
@@ -123,7 +151,7 @@ const Dashboard = () => {
                 <td className="px-6 py-4 flex gap-2">
                   <button
                     onClick={() => navigate(`/admin/edituser/${e._id}`)}
-                    className="bg-green-600 p-2 text-white rounded-md active:scale-75 transition-all ease-in duration-[.3]"
+                    className="bg-green-600 p-2  text-white rounded-md active:scale-75 transition-all ease-in duration-[.3]"
                   >
                     Edit
                   </button>

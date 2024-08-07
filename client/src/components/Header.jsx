@@ -1,8 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from 'react-redux';
+import useAuth from "../hooks/useAuth";
 
 const Header = () => {
+
+  useAuth() //  User Authh 
 
   const { currentUser } = useSelector(state => state.user); //  Using Sate Value
   

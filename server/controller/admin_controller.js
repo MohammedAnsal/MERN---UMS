@@ -10,7 +10,7 @@ export const verifySignin = async (req, res, next) => {     //  For Admin SignIn
         
         if (!admin) return next(errorHandler(401, 'Somthing Went Wrong!!!'));
 
-        res.status(200).json('Sign In Successfully...')
+        res.status(200).json({admin})
         
     } catch (error) {
 
@@ -70,8 +70,7 @@ export const editUser = async (req, res, next) => { //  For User Edit
             }
         }, { new: true });
 
-        const { password, ...rest } = userEdit._doc;
-        res.status(200).json(rest);
+        res.status(200).json(userEdit);
                 
     } catch (error) {
 
@@ -104,6 +103,10 @@ export const addUser = async (req, res, next) => {
 
         const hashPassword = bcryptjs.hashSync(password, 10);
 
+        const exist = await User.findOne({ $or: [{ email }, { userName: username }] }); //  Checking 
+
+        if (exist) return res.status(400).json({ message: "user already exist" })
+        
         const newUser = new User({
 
             userName: username,
@@ -116,7 +119,7 @@ export const addUser = async (req, res, next) => {
         res.status(200).json('Add User Successfully');
         
     } catch (error) {
-
+        
         next(error)
         
     }

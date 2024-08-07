@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import OAuth from '../../components/OAuth';
+import { toast } from 'sonner';
 
 const SignUp = () => {
   
@@ -19,7 +20,40 @@ const SignUp = () => {
 
   };
 
-  // Passing User Data in the backend side :0-
+  //  Validation :-
+
+  const validation = () => {
+   
+    const { username, email, password } = formData;
+   
+    if (!username && !email && !password || (username?.trim() == '' || email?.trim() == '' || password?.trim() == '')) {
+
+      toast.error('field can not be empty')
+      return false
+    }
+    
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    if (!emailRegex.test(email)) {
+      toast.error('Please enter a valid email address');
+      return false;
+    }
+    
+    if (username?.length < 4) {
+      toast.error('username minimum 4 required')
+      return false
+    }
+    if (password.length < 6) {
+      toast.error('minimum 6 character Required')
+      return false
+    }
+
+   
+    return true
+    
+  };
+
+  // Passing User Data in the backend side :-
 
   const handleSumbit = async (e) => {
 
@@ -27,29 +61,34 @@ const SignUp = () => {
     
     try {
 
-      setLoading(true)
-      setError(false)
-
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await res.json()
-
-      setLoading(false)
-
-      if (data.success === false) {
+      if (validation()) {
         
-        setError(true)
-        return
+        setLoading(true)
+        setError(false)
+  
+        const res = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
+  
+        const data = await res.json()
+  
+        if (data.success === false) {
+          
+          setError(true)
+          return
+  
+        }
+
+        setLoading(false)
+  
+        navigate("/sign-in")
+        toast.success('SignUp Successfully...')
 
       }
-
-      navigate("/sign-in")
       
     } catch (error) {
 
